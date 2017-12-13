@@ -2,6 +2,7 @@
 /.project
 /.settings/
 
+/test.php
 /version.txt
 /mamicleaner.phar
 

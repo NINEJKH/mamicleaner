@@ -3,6 +3,7 @@
 namespace App\Commands\Ami;
 
 use App\Domain\MapReduce;
+use App\Providers\AwsCredentialProfileProvider;
 use App\Repositories\AutoScalingGroupRepository;
 use App\Repositories\Ec2Repository;
 use App\Repositories\ImageRepository;
@@ -29,22 +30,28 @@ class PurgeCommand extends Command
     {
         $allImages = $allInstances = $allAutoScalingGroups = $allLaunchConfigurations = [];
 
-        foreach($input->getOption('profile') as $profile) {
+        foreach($input->getOption('profile') as $n => $profile) {
+
+            $awsCredentialProvider = new AwsCredentialProfileProvider;
+            $credentials = $awsCredentialProvider->getCredentials($profile);
+
             $ec2Client = new Ec2Client([
                 'region' => $input->getOption('region'),
                 'version' => '2016-11-15',
-                'profile' => $profile,
+                'credentials' => $credentials,
             ]);
 
             $autoScalingClient = new AutoScalingClient([
                 'region' => $input->getOption('region'),
                 'version' => '2011-01-01',
-                'profile' => $profile,
+                'credentials' => $credentials,
             ]);
 
-            // fetch all images
-            $imageRepository = new ImageRepository($ec2Client);
-            $allImages = array_merge($allImages, $imageRepository->findAll());
+            // fetch all images (only from the primary profile)
+            if ($n === 0) {
+                $imageRepository = new ImageRepository($ec2Client);
+                $allImages = array_merge($allImages, $imageRepository->findAll());
+            }
 
             // fetch all instances
             $ec2Repository = new Ec2Repository($ec2Client);
@@ -58,7 +65,7 @@ class PurgeCommand extends Command
             $launchConfigurationRepository = new LaunchConfigurationRepository($autoScalingClient);
             $allLaunchConfigurations = array_merge($allLaunchConfigurations, $launchConfigurationRepository->findAll());
 
-            unset($ec2Client, $autoScalingClient, $imageRepository, $ec2Repository, $autoScalingGroupRepository, $launchConfigurationRepository);
+            unset($awsCredentialProvider, $credentials, $ec2Client, $autoScalingClient, $imageRepository, $ec2Repository, $autoScalingGroupRepository, $launchConfigurationRepository);
         }
 
         $mapReduce = new MapReduce(
@@ -93,15 +100,24 @@ class PurgeCommand extends Command
             }
 
             // connect to primary profile
-            $ec2Client = new Ec2Client([
-                'region' => $input->getOption('region'),
-                'version' => '2016-11-15',
-                'profile' => $input->getOption('profile')[0],
-            ]);
-            $imageRepository = new ImageRepository($ec2Client);
-            $imageRepository->delete($deletableImages);
+            if (!$input->hasOption('dry-run') || !$input->getOption('dry-run')) {
+                // give 5 second opportunity to abort
+                sleep(5);
 
-            unset($ec2Client, $imageRepository);
+                $awsCredentialProvider = new AwsCredentialProfileProvider;
+                $credentials = $awsCredentialProvider->getCredentials($input->getOption('profile')[0]);
+
+                $ec2Client = new Ec2Client([
+                    'region' => $input->getOption('region'),
+                    'version' => '2016-11-15',
+                    'credentials' => $credentials,
+                ]);
+
+                $imageRepository = new ImageRepository($ec2Client);
+                $imageRepository->delete($deletableImages);
+
+                unset($ec2Client, $imageRepository);
+            }
         }
     }
 }
