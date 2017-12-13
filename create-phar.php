@@ -18,7 +18,7 @@ if (file_exists($pharFile . '.gz')) {
 $p = new Phar($pharFile);
 
 // creating our library using whole directory
-$p->buildFromDirectory(dirname(__FILE__), '~^(?!(.*\.git))(.*)$~i');
+$p->buildFromDirectory(dirname(__FILE__), '~^(?!(.*(\.git|\.bash)))(.*)$~i');
 
 $stub = <<<"EOT"
 #!/usr/bin/env php
