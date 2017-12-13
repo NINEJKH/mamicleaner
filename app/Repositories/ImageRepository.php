@@ -34,19 +34,17 @@ class ImageRepository
     public function delete(array $images)
     {
         foreach ($images as $image) {
-            //$this->persistence->deregisterImage([
-            //    'ImageId' => $image['ImageId'],
-            //]);
+            $this->persistence->deregisterImage([
+                'ImageId' => $image['ImageId'],
+            ]);
 
             foreach ($image['BlockDeviceMappings'] as $blockDeviceMapping) {
                 if (isset($blockDeviceMapping['Ebs']['SnapshotId'])) {
-                    //$this->persistence->deleteSnapshot([
-                    //    'SnapshotId' => $blockDeviceMapping['Ebs']['SnapshotId'],
-                    //]);
-                    var_dump($blockDeviceMapping['Ebs']['SnapshotId']);
+                    $this->persistence->deleteSnapshot([
+                        'SnapshotId' => $blockDeviceMapping['Ebs']['SnapshotId'],
+                    ]);
                 }
             }
         }
-
     }
 }

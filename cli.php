@@ -9,8 +9,8 @@ use App\Commands\Ami\PurgeCommand;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\InputOption;
 
-if (file_exists('version.txt')) {
-    $version = file_get_contents('version.txt');
+if (file_exists(__DIR__ . '/version.txt')) {
+    $version = file_get_contents(__DIR__ . '/version.txt');
 } else {
     $version = 'dev';
 }
