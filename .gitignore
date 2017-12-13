@@ -1,0 +1,8 @@
+/.buildpath
+/.project
+/.settings/
+
+/version.txt
+/mamicleaner.phar
+
+/vendor/
