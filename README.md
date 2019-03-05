@@ -9,7 +9,7 @@ and should most probably not yet be used in production.
 ## Installation
 
 ```bash
-$ sudo curl -#fLo /usr/local/bin/mamicleaner https://github.com/NINEJKH/mamicleaner/releases/download/0.0.2/mamicleaner.phar && sudo chmod +x /usr/local/bin/mamicleaner
+$ curl -#fL "$(curl -s https://api.github.com/repos/NINEJKH/mamicleaner/releases/latest | grep 'browser_download_url' | sed -n 's/.*"\(http.*\)".*/\1/p')" | sudo tee /usr/local/bin/mamicleaner > /dev/null && sudo chmod +x /usr/local/bin/mamicleaner
 ```
 
 ## Usage
