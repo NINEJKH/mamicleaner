@@ -21,7 +21,6 @@ matrix:
     - php: 7.1
 
 deploy:
-  skip_cleanup: true
   - provider: releases
     api_key:
       secure: RLt5auZTQie7TF5AoIKg6gSmo4cexRQ1ytpsbIq5AJMrNIFXFyONWnDfF9dcfm4opwigh8vBPmm2JHPueDd039Ya0e2n208eJBLgZ+WpR+/psWcTUiVKse7rT9cU1HpbhpQC/1TO6qiPYep1HLKTeXvA37MsD0tT9wm9WA6SlTRKEmizpj9Afww/OKz/Hb4ENIosT8+EBwNYqQeZTzSuNjsMh01xSfU2TMCy6dLu2/f5D46CLTXDSeB9C4XC8fwA+KnzI69opI7mTQECMclWQOZXhTRoRDJXM2kNRTo8iUWjuVUgCqOT4QjHKOSaXmC5UI8Kjj9+7AJ3HQ54JYF3QTy9RJ+KX137JeTuyEiRmGGGPc0jcmVBx8JLiZihyE1s0fV6Ue4g5VKbg0teIyBvQeKyjyf1FaGJE3ZZBmEH7ujwccOvcRKl8fzlRHLFsCzVXiNIonmk0CIZyUqxOuuazM4qxkui1kBJ30dTKLvW7ysGMEMM3SJCjz5isU9waejjA27Y2lJhAv96w/RQ8kUAwwDz9RgYi7mnra9UShnv1y/Njf7GY4Tj/Z+TKyYLqyYLbMWtUuIg8qBQ0XwagU7Zb5jRSmLaJ8qP7r4GaCpF4a/JjB48LswrrryseK6Z6Y1wVMnro0QTo13VVhuT/9Yj9xX4IpFNtRFKNDR+PBDsee4=
@@ -29,11 +28,14 @@ deploy:
     on:
       tags: true
       condition: $DEPLOY = true
+    skip_cleanup: true
+
   - provider: script
     script: "./push.sh"
     on:
       branch: master
       tags: true
       condition: $DEPLOY = true
+    skip_cleanup: true
 
 script: "./build.sh"
