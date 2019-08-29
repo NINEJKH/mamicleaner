@@ -73,7 +73,8 @@ class PurgeCommand extends Command
             $allImages,
             $allInstances,
             $allAutoScalingGroups,
-            $allLaunchConfigurations
+            $allLaunchConfigurations,
+            $output
         );
 
         if ($input->hasOption('filter-name') && !empty($input->getOption('filter-name'))) {

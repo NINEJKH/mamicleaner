@@ -2,6 +2,8 @@
 
 namespace App\Domain;
 
+use Symfony\Component\Console\Output\OutputInterface;
+
 use DateInterval;
 use DateTime;
 use DateTimeZone;
@@ -25,17 +27,21 @@ class MapReduce
 
     protected $keepDays;
 
+    private $output;
+
     public function __construct(
         array $images,
         array $instances,
         array $autoScalingGroups,
-        array $launchConfigurations
+        array $launchConfigurations,
+        OutputInterface $output
     )
     {
         $this->images = $images;
         $this->instances = $instances;
         $this->autoScalingGroups = $autoScalingGroups;
         $this->launchConfigurations = $launchConfigurations;
+        $this->output = $output;
 
         $this->mapInstances();
         $this->mapAutoScalingGroups();
@@ -121,14 +127,23 @@ class MapReduce
         foreach ($this->instances as $reservation) {
             foreach ($reservation['Instances'] as $instance) {
                 if (isset($this->images[$instance['ImageId']])) {
+                    $this->output->writeln(sprintf(
+                        'AMI (%s) used by InstanceId: %s',
+                        $instance['ImageId'],
+                        $instance['InstanceId']
+                    ));
+
                     $this->usedImages[$instance['ImageId']] = true;
                 }
             }
         }
+
+        $this->output->writeln("\n");
     }
 
     /**
      * filter all image-ids in a asg with desired = 0
+     * (as these would not show on a currently running ec2)
      */
     protected function mapAutoScalingGroups()
     {
@@ -138,13 +153,22 @@ class MapReduce
             }
 
             if ($asg['DesiredCapacity'] === 0 && isset($this->images[$this->launchConfigurations[$asg['LaunchConfigurationName']]['ImageId']])) {
+                $this->output->writeln(sprintf(
+                    'AMI (%s) used by AutoScalingGroup: %s',
+                    $this->launchConfigurations[$asg['LaunchConfigurationName']]['ImageId'],
+                    $asg['AutoScalingGroupName']
+                ));
+
                 $this->usedImages[$this->launchConfigurations[$asg['LaunchConfigurationName']]['ImageId']] = true;
             }
         }
+
+        $this->output->writeln("\n");
     }
 
     /**
      * filter all image-ids in a unattached lc
+     * (as these would not show up on a currently running ec2)
      */
     protected function mapLaunchConfigurations()
     {
@@ -161,9 +185,17 @@ class MapReduce
         if (!empty($unattachedLcs) && is_array($unattachedLcs)) {
             foreach ($unattachedLcs as $unattachedLc) {
                 if (isset($this->images[$unattachedLc['ImageId']])) {
+                    $this->output->writeln(sprintf(
+                        'AMI (%s) used by LaunchConfiguration: %s',
+                        $unattachedLc['ImageId'],
+                        $unattachedLc['LaunchConfigurationName']
+                    ));
+
                     $this->usedImages[$unattachedLc['ImageId']] = true;
                 }
             }
         }
+
+        $this->output->writeln("\n");
     }
 }
