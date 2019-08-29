@@ -88,24 +88,20 @@ class MapReduce
             foreach ($deletableImages as $k => $deletableImage) {
                 // skip until we reach minimum
                 if ($this->keepPrevious  && $n++ < $this->keepPrevious) {
-                    var_dump('a: ' . $k);
+                    //var_dump('a: ' . $k);
                     unset($deletableImages[$k]);
                     continue;
                 }
 
-                var_dump($deletableImage['CreationTimestamp'] . ' > ' . $keepTimestamp);
+                //var_dump($deletableImage['CreationTimestamp'] . ' > ' . $keepTimestamp);
                 if ($deletableImage['CreationTimestamp'] > $keepTimestamp) {
-                    var_dump('b: ' . $k);
+                    //var_dump('b: ' . $k);
                     unset($deletableImages[$k]);
                 }
             }
         } elseif ($this->keepPrevious) {
             $deletableImages = array_slice($deletableImages, $this->keepPrevious, null, true);
         }
-
-        //foreach ($deletableImages as $ami_id => $deletableImage) {
-        //    var_dump($ami_id . " - " . $deletableImage['CreationDate']);
-        //}
 
         return $deletableImages;
     }
