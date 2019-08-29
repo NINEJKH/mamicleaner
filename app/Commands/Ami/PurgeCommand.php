@@ -23,7 +23,8 @@ class PurgeCommand extends Command
             ->setName('ami:purge')
             ->setDescription('Purges unused amis')
             ->addOption('filter-name', null, InputOption::VALUE_OPTIONAL, 'Keyword filter by AMI name')
-            ->addOption('keep-previous', null, InputOption::VALUE_OPTIONAL, 'Number of previous AMI to keep excluding those currently being running');
+            ->addOption('keep-previous', null, InputOption::VALUE_OPTIONAL, 'Number of previous AMI to keep, excluding those currently being used')
+            ->addOption('keep-days', null, InputOption::VALUE_OPTIONAL, 'Number of days of AMI to keep, excluding those currently being used');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -72,7 +73,8 @@ class PurgeCommand extends Command
             $allImages,
             $allInstances,
             $allAutoScalingGroups,
-            $allLaunchConfigurations
+            $allLaunchConfigurations,
+            $output
         );
 
         if ($input->hasOption('filter-name') && !empty($input->getOption('filter-name'))) {
@@ -84,6 +86,13 @@ class PurgeCommand extends Command
             && ctype_digit($input->getOption('keep-previous'))
         ) {
             $mapReduce->keepPrevious($input->getOption('keep-previous'));
+        }
+
+        if ($input->hasOption('keep-days')
+            && !empty($input->getOption('keep-days'))
+            && ctype_digit($input->getOption('keep-days'))
+        ) {
+            $mapReduce->keepDays($input->getOption('keep-days'));
         }
 
         $deletableImages = $mapReduce->deletable();

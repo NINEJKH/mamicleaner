@@ -16,15 +16,17 @@ class LaunchConfigurationRepository
     public function findAll()
     {
         $launchConfigurations = [];
-        $results = $this->persistence->DescribeLaunchConfigurations()['LaunchConfigurations'];
+        $results = $this->persistence->getPaginator('DescribeLaunchConfigurations');
 
-        if (is_array($results)) {
-            foreach ($results as $result) {
-                $launchConfigurations[$result['LaunchConfigurationName']] = $result;
+        foreach ($results as $result) {
+            if (!empty($result['LaunchConfigurations'])) {
+                foreach ($result['LaunchConfigurations'] as $launchConfiguration) {
+                    $launchConfigurations[$launchConfiguration['LaunchConfigurationName']] = $launchConfiguration;
+                }
             }
         }
-        unset($results);
 
+        unset($results);
         return $launchConfigurations;
     }
 }
