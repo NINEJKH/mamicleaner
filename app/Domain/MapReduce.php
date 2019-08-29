@@ -77,28 +77,30 @@ class MapReduce
 
         $timestamps = array_column($deletableImages, 'CreationTimestamp');
 
-        array_multisort($timestamps, SORT_ASC, $deletableImages);
+        array_multisort($timestamps, SORT_DESC, $deletableImages);
 
         if ($this->keepDays) {
-            $total = count($deletableImages);
+            $n = 0;
             $now = new DateTime('now', new DateTimeZone('UTC'));
-            $keepDay = $now->sub(new DateInterval(sprintf('P%dD', $this->keepDays)));
-            $keepTimestamp = $now->format('U');
+            $now->sub(new DateInterval(sprintf('P%dD', $this->keepDays)));
+            $keepTimestamp = $now->getTimestamp();
 
             foreach ($deletableImages as $k => $deletableImage) {
-                if ($this->keepPrevious  && $total <= $this->keepPrevious) {
-                    break;
+                // skip until we reach minimum
+                if ($this->keepPrevious  && $n++ < $this->keepPrevious) {
+                    var_dump('a: ' . $k);
+                    unset($deletableImages[$k]);
+                    continue;
                 }
 
-                if ($deletableImage['CreationTimestamp'] < $keepTimestamp) {
+                var_dump($deletableImage['CreationTimestamp'] . ' > ' . $keepTimestamp);
+                if ($deletableImage['CreationTimestamp'] > $keepTimestamp) {
+                    var_dump('b: ' . $k);
                     unset($deletableImages[$k]);
-                    --$total;
                 }
             }
-        }
-
-        if ($this->keepPrevious) {
-            $deletableImages = array_slice($deletableImages, $this->keepPrevious * -1, $this->keepPrevious, true);
+        } elseif ($this->keepPrevious) {
+            $deletableImages = array_slice($deletableImages, $this->keepPrevious, null, true);
         }
 
         //foreach ($deletableImages as $ami_id => $deletableImage) {
