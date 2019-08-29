@@ -95,9 +95,9 @@ class MapReduce
             $deletableImages = array_slice($deletableImages, $this->keepPrevious * -1, $this->keepPrevious, true);
         }
 
-        foreach ($deletableImages as $ami_id => $deletableImage) {
-            var_dump($ami_id . " - " . $deletableImage['CreationDate']);
-        }
+        //foreach ($deletableImages as $ami_id => $deletableImage) {
+        //    var_dump($ami_id . " - " . $deletableImage['CreationDate']);
+        //}
 
         return $deletableImages;
     }
