@@ -16,18 +16,19 @@ class ImageRepository
     public function findAll()
     {
         $images = [];
-
-        $results = $this->persistence->describeImages([
+        $results = $this->persistence->getPaginator('DescribeImages', [
             'Owners' => ['self'],
-        ])['Images'];
+        ]);
 
-        if (is_array($results)) {
-            foreach ($results as $result) {
-                $images[$result['ImageId']] = $result;
+        foreach ($results as $result) {
+            if (!empty($result['Images'])) {
+                foreach ($result['Images'] as $image) {
+                    $images[$image['ImageId']] = $image;
+                }
             }
         }
-        unset($results);
 
+        unset($results);
         return $images;
     }
 

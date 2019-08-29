@@ -15,7 +15,8 @@ class Ec2Repository
 
     public function findNonTerminated()
     {
-        return $this->persistence->describeInstances([
+        $instances = [];
+        $results = $this->persistence->getPaginator('DescribeInstances', [
             'instance-state-name' => [
                 'pending',
                 'running',
@@ -23,6 +24,17 @@ class Ec2Repository
                 'stopping',
                 'stopped',
             ],
-        ])['Reservations'];
+        ]);
+
+        foreach ($results as $result) {
+            if (!empty($result['Reservations'])) {
+                foreach ($result['Reservations'] as $reservation) {
+                    $instances[] = $reservation;
+                }
+            }
+        }
+
+        unset($results);
+        return $instances;
     }
 }

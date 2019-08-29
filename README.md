@@ -9,11 +9,11 @@ and should most probably not yet be used in production.
 ## Installation
 
 ```bash
-$ curl -#fL "$(curl -s https://api.github.com/repos/NINEJKH/mamicleaner/releases/latest | grep 'browser_download_url' | sed -n 's/.*"\(http.*\)".*/\1/p')" | sudo tee /usr/local/bin/mamicleaner > /dev/null && sudo chmod +x /usr/local/bin/mamicleaner
+curl -#fL "$(curl -s https://api.github.com/repos/NINEJKH/mamicleaner/releases/latest | grep 'browser_download_url' | sed -n 's/.*"\(http.*\)".*/\1/p')" | sudo tee /usr/local/bin/mamicleaner > /dev/null && sudo chmod +x /usr/local/bin/mamicleaner
 ```
 
 ## Usage
 
 ```bash
-$ mamicleaner -pprofile1 -pprofile2 -Reu-west-2 ami:purge --filter-name=laravel --keep-previous 3
+mamicleaner -pprofile1 -pprofile2 -Reu-west-2 ami:purge --filter-name=laravel --keep-previous 3
 ```

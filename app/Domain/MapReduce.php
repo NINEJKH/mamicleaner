@@ -2,6 +2,11 @@
 
 namespace App\Domain;
 
+use DateInterval;
+use DateTime;
+use DateTimeZone;
+use Exception;
+
 class MapReduce
 {
     protected $images = [];
@@ -17,6 +22,8 @@ class MapReduce
     protected $nonMatchingImages = [];
 
     protected $keepPrevious;
+
+    protected $keepDays;
 
     public function __construct(
         array $images,
@@ -49,20 +56,47 @@ class MapReduce
         $this->keepPrevious = (int) $num;
     }
 
+    public function keepDays($num)
+    {
+        $this->keepDays = (int) $num;
+    }
+
     public function deletable()
     {
         $deletableImages = array_diff_key($this->images, $this->usedImages, $this->nonMatchingImages);
 
-        if ($this->keepPrevious) {
-            $map = [];
-            foreach ($deletableImages as $k => $each) {
-                $map[$k] = strtotime($each['CreationDate']);
+        foreach ($deletableImages as $k => $deletableImage) {
+            $deletableImages[$k]['CreationTimestamp'] = strtotime($deletableImage['CreationDate']);
+        }
+
+        $timestamps = array_column($deletableImages, 'CreationTimestamp');
+
+        array_multisort($timestamps, SORT_ASC, $deletableImages);
+
+        if ($this->keepDays) {
+            $total = count($deletableImages);
+            $now = new DateTime('now', new DateTimeZone('UTC'));
+            $keepDay = $now->sub(new DateInterval(sprintf('P%dD', $this->keepDays)));
+            $keepTimestamp = $now->format('U');
+
+            foreach ($deletableImages as $k => $deletableImage) {
+                if ($this->keepPrevious  && $total <= $this->keepPrevious) {
+                    break;
+                }
+
+                if ($deletableImage['CreationTimestamp'] < $keepTimestamp) {
+                    unset($deletableImages[$k]);
+                    --$total;
+                }
             }
+        }
 
-            arsort($map, SORT_NUMERIC);
-            $map = array_slice($map, 0, $this->keepPrevious, true);
+        if ($this->keepPrevious) {
+            $deletableImages = array_slice($deletableImages, $this->keepPrevious * -1, $this->keepPrevious, true);
+        }
 
-            $deletableImages = array_diff_key($deletableImages, $map);
+        foreach ($deletableImages as $ami_id => $deletableImage) {
+            var_dump($ami_id . " - " . $deletableImage['CreationDate']);
         }
 
         return $deletableImages;
@@ -99,6 +133,10 @@ class MapReduce
     protected function mapAutoScalingGroups()
     {
         foreach ($this->autoScalingGroups as $asg) {
+            if ($asg['DesiredCapacity'] === 0 && !$this->launchConfigurations[$asg['LaunchConfigurationName']]['ImageId']) {
+                throw new Exception('This should not happen. Try again.');
+            }
+
             if ($asg['DesiredCapacity'] === 0 && isset($this->images[$this->launchConfigurations[$asg['LaunchConfigurationName']]['ImageId']])) {
                 $this->usedImages[$this->launchConfigurations[$asg['LaunchConfigurationName']]['ImageId']] = true;
             }

@@ -30,10 +30,16 @@ class AwsCredentialProfileProvider
         if (!empty($this->awsCredentials[$profile]['aws_access_key_id'])
             && !empty($this->awsCredentials[$profile]['aws_secret_access_key'])
         ) {
-            return [
+            $return = [
                 'key' => $this->awsCredentials[$profile]['aws_access_key_id'],
                 'secret' => $this->awsCredentials[$profile]['aws_secret_access_key'],
             ];
+
+            if (!empty($this->awsCredentials[$profile]['aws_session_token'])) {
+                $return['token'] = $this->awsCredentials[$profile]['aws_session_token'];
+            }
+
+            return $return;
         } elseif (!empty($this->awsCredentials[$profile]['role_arn'])
             && !empty($this->awsCredentials[$profile]['source_profile'])
         ) {

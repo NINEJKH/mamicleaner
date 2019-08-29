@@ -15,6 +15,18 @@ class AutoScalingGroupRepository
 
     public function findAll()
     {
-        return $this->persistence->describeAutoScalingGroups()['AutoScalingGroups'];
+        $autoScalingGroups = [];
+        $results = $this->persistence->getPaginator('DescribeAutoScalingGroups');
+
+        foreach ($results as $result) {
+            if (!empty($result['AutoScalingGroups'])) {
+                foreach ($result['AutoScalingGroups'] as $autoScalingGroup) {
+                    $autoScalingGroups[] = $autoScalingGroup;
+                }
+            }
+        }
+
+        unset($results);
+        return $autoScalingGroups;
     }
 }

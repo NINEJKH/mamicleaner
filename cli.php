@@ -2,6 +2,7 @@
 
 error_reporting(E_ALL);
 ini_set('display_errors', true);
+ini_set('memory_limit', -1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
